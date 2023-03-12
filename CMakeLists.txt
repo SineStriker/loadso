@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.16)
 
 project(loadso)
 
-if(NOT LOADSO_BUILD_STATIC)
+if(NOT DEFINED LOADSO_BUILD_STATIC)
     set(LOADSO_BUILD_STATIC off)
 endif()
 
-if(NOT LOADSO_BUILD_TESTS)
+if(NOT DEFINED LOADSO_BUILD_TESTS)
     set(LOADSO_BUILD_TESTS on)
 endif()
 
