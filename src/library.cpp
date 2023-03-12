@@ -74,13 +74,16 @@ namespace LoadSO {
         }
 
         void getErrMsg() {
-            errorMessage =
+           
 #ifdef _WIN32
-                WinGetLastErrorString()
+                errorMessage = WinGetLastErrorString();
 #else
-                dlerror()
+                auto err = dlerror();
+                if (err) {
+                    errorMessage = err;
+                }
 #endif
-                ;
+                
         }
     };
 
@@ -127,7 +130,7 @@ namespace LoadSO {
 #ifdef _WIN32
             ::FreeLibrary(handle)
 #else
-            dlclose(handle);
+            (dlclose(handle) == 0)
 #endif
         ) {
             _impl->getErrMsg();

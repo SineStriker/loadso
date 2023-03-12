@@ -9,6 +9,7 @@
 #    include <dlfcn.h>
 #    include <limits.h>
 #    include <string.h>
+#    include <stdio.h>
 #    define OS_MAX_PATH PATH_MAX
 #endif
 
@@ -39,7 +40,7 @@ namespace LoadSO {
             // Iterate forward to '\0'
             for (; *p; ++p) {
             }
-            auto last = --p;
+            auto last = p;
 
             // Iterate backward to the last slash
             PathChar *dot_ptr = __app_path;
@@ -116,7 +117,7 @@ namespace LoadSO {
         SetDllDirectoryW(path.data());
 #else
         std::string org = getenv("LD_LIBRARY_PATH");
-        putenv(("LD_LIBRARY_PATH=" + path).data());
+        putenv((char *) ("LD_LIBRARY_PATH=" + path).data());
 #endif
         return org;
     }
@@ -125,10 +126,11 @@ namespace LoadSO {
 #if _WIN32
         return ::PathIsRelativeW(path.data());
 #else
-        while (path && *path == ' ') {
-            path++;
+        auto p = path.data();
+        while (p && *p == ' ') {
+            p++;
         }
-        return !path || *path != '/';
+        return !p || *p != '/';
 #endif
     }
 
@@ -209,7 +211,7 @@ namespace LoadSO {
 #    endif
                           | MB_SETFOREGROUND | MB_ICONERROR);
 #else
-        fprintf(stderr, "%s\n", str.data());
+        fprintf(stderr, "%s\n", text.data());
 #endif
     }
 }

@@ -13,7 +13,12 @@ int main(int argc, char *argv[]) {
     // Load library
     LoadSO::System::PrintLine(LOADSO_STR("[Test Load Library]"));
     LoadSO::Library lib;
-    if (!lib.open(LOADSO_STR(DLL_NAME))) {
+    if (!lib.open(LOADSO_STR(
+#ifndef _WIN32
+        "../lib/"
+#endif
+        DLL_NAME
+        ))) {
         LoadSO::System::ShowError(lib.lastError());
         return -1;
     }

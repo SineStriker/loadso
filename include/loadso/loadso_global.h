@@ -38,10 +38,6 @@ namespace LoadSO {
 
     static const PathChar PathSeparator = L'\\';
 #else
-#    include <dlfcn.h>
-#    include <limits.h>
-#    include <string.h>
-
     using PathChar = char;
     using PathString = std::string;
     using DllHandle = void *;
