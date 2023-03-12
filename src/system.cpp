@@ -39,7 +39,7 @@ namespace LoadSO {
             // Iterate forward to '\0'
             for (; *p; ++p) {
             }
-            auto last = --p;
+            auto last = p;
 
             // Iterate backward to the last slash
             PathChar *dot_ptr = __app_path;
