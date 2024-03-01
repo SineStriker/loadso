@@ -1,26 +1,26 @@
-#ifndef LOADSO_GLOBAL_H
-#define LOADSO_GLOBAL_H
+#ifndef LOADSO_LOADSO_GLOBAL_H
+#define LOADSO_LOADSO_GLOBAL_H
 
-#include <iostream>
+#include <string>
 
 #ifdef _WIN32
-#    define _LOADSO_DECL_EXPORT __declspec(dllexport)
-#    define _LOADSO_DECL_IMPORT __declspec(dllimport)
+#  define _LOADSO_DECL_EXPORT __declspec(dllexport)
+#  define _LOADSO_DECL_IMPORT __declspec(dllimport)
 #else
-#    define _LOADSO_DECL_EXPORT
-#    define _LOADSO_DECL_IMPORT
+#  define _LOADSO_DECL_EXPORT __attribute__((visibility("default")))
+#  define _LOADSO_DECL_IMPORT __attribute__((visibility("default")))
 #endif
 
 #ifndef LOADSO_EXPORT
-#    ifdef LOADSO_STATIC
-#        define LOADSO_EXPORT
+#  ifdef LOADSO_STATIC
+#    define LOADSO_EXPORT
+#  else
+#    ifdef LOADSO_LIBRARY
+#      define LOADSO_EXPORT _LOADSO_DECL_EXPORT
 #    else
-#        ifdef LOADSO_LIBRARY
-#            define LOADSO_EXPORT _LOADSO_DECL_EXPORT
-#        else
-#            define LOADSO_EXPORT _LOADSO_DECL_IMPORT
-#        endif
+#      define LOADSO_EXPORT _LOADSO_DECL_IMPORT
 #    endif
+#  endif
 #endif
 
 namespace LoadSO {
@@ -31,10 +31,10 @@ namespace LoadSO {
     using DllHandle = void *;
     using EntryHandle = void *;
 
-#    define _LOADSO_STR(s) L##s
+#  define _LOADSO_STR(s) L##s
 
-#    define LOADSO_STR(s) _LOADSO_STR(s)
-#    define LOADSO_STRCPY wcscpy
+#  define LOADSO_STR(s) _LOADSO_STR(s)
+#  define LOADSO_STRCPY wcscpy
 
     static const PathChar PathSeparator = L'\\';
 #else
@@ -43,12 +43,12 @@ namespace LoadSO {
     using DllHandle = void *;
     using EntryHandle = void *;
 
-#    define LOADSO_STR(s) s
-#    define LOADSO_STRCPY strcpy
+#  define LOADSO_STR(s) s
+#  define LOADSO_STRCPY strcpy
 
     static const PathChar PathSeparator = '/';
 #endif
 
 }
 
-#endif // LOADSO_GLOBAL_H
+#endif // LOADSO_LOADSO_GLOBAL_H

@@ -2,51 +2,51 @@
 #include "loadso/system.h"
 
 #ifdef _WIN32
-#    include <Windows.h>
+#  include <Windows.h>
 // 12345
-#    include <Shlwapi.h>
-#    define OS_MAX_PATH MAX_PATH
+#  include <Shlwapi.h>
+#  define OS_MAX_PATH MAX_PATH
 #else
-#    include <dlfcn.h>
-#    include <limits.h>
-#    include <string.h>
-#    define OS_MAX_PATH PATH_MAX
-#endif
-
-#ifdef _WIN32
-
-static std::wstring WinGetLastErrorString(DWORD *errNum = nullptr) {
-    // Get the error message ID, if any.
-    DWORD errorMessageID = ::GetLastError();
-    if (errorMessageID == 0) {
-        return {}; // No error message has been recorded
-    }
-
-    if (errNum) {
-        *errNum = errorMessageID;
-    }
-
-    LPWSTR messageBuffer = nullptr;
-
-    // Ask Win32 to give us the string version of that message ID.
-    // The parameters we pass in, tell Win32 to create the buffer that holds the message for us
-    // (because we don't yet know how long the message string will be).
-    size_t size = ::FormatMessageW(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
-        errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR) &messageBuffer, 0, NULL);
-
-    // Copy the error message into a std::string.
-    std::wstring message(messageBuffer, size);
-
-    // Free the Win32's string's buffer.
-    ::LocalFree(messageBuffer);
-
-    return message;
-}
-
+#  include <dlfcn.h>
+#  include <limits.h>
+#  include <string.h>
+#  define OS_MAX_PATH PATH_MAX
 #endif
 
 namespace LoadSO {
+
+#ifdef _WIN32
+
+    static constexpr const DWORD g_EnglishLangId = MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US);
+
+    static std::wstring winErrorMessage(uint32_t error, bool nativeLanguage = true) {
+        std::wstring rc;
+        wchar_t *lpMsgBuf;
+
+        const DWORD len =
+            ::FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+                                 FORMAT_MESSAGE_IGNORE_INSERTS,
+                             NULL, error, nativeLanguage ? 0 : g_EnglishLangId,
+                             reinterpret_cast<LPWSTR>(&lpMsgBuf), 0, NULL);
+
+        if (len) {
+            // Remove tail line breaks
+            if (lpMsgBuf[len - 1] == L'\n') {
+                lpMsgBuf[len - 1] = L'\0';
+                if (len > 2 && lpMsgBuf[len - 2] == L'\r') {
+                    lpMsgBuf[len - 2] = L'\0';
+                }
+            }
+            rc = std::wstring(lpMsgBuf, int(len));
+            ::LocalFree(lpMsgBuf);
+        } else {
+            rc += L"unknown error";
+        }
+
+        return rc;
+    }
+
+#endif
 
     using DllHandlePrivate =
 #ifdef _WIN32
@@ -67,36 +67,59 @@ namespace LoadSO {
     class Library::Impl {
     public:
         DllHandlePrivate hDll;
-        PathString errorMessage;
+        PathString path;
 
         Impl() {
             hDll = nullptr;
         }
 
-        void getErrMsg() {
-           
+        PathString getErrMsg(bool nativeLanguage) {
 #ifdef _WIN32
-                errorMessage = WinGetLastErrorString();
+            return winErrorMessage(::GetLastError(), nativeLanguage);
 #else
-                auto err = dlerror();
-                if (err) {
-                    errorMessage = err;
-                }
+            auto err = dlerror();
+            if (err) {
+                return err;
+            }
+            return {};
 #endif
-                
+        }
+
+        static int nativeLoadHints(int loadHints) {
+#ifdef _WIN32
+            return 0;
+#else
+            int dlFlags = 0;
+            if (loadHints & Library::ResolveAllSymbolsHint) {
+                dlFlags |= RTLD_NOW;
+            } else {
+                dlFlags |= RTLD_LAZY;
+            }
+            if (loadHints & ExportExternalSymbolsHint) {
+                dlFlags |= RTLD_GLOBAL;
+            }
+#  if !defined(Q_OS_CYGWIN)
+            else {
+                dlFlags |= RTLD_LOCAL;
+            }
+#  endif
+#  if defined(RTLD_DEEPBIND)
+            if (loadHints & DeepBindHint)
+                dlFlags |= RTLD_DEEPBIND;
+#  endif
+            return dlFlags;
+#endif
         }
     };
 
-    Library::Library() {
-        _impl = new Impl();
+    Library::Library() : _impl(std::make_unique<Impl>()) {
     }
 
     Library::~Library() {
         close();
-        delete _impl;
     }
 
-    bool Library::open(const PathString &path) {
+    bool Library::open(const PathString &path, int hints) {
         PathString absPath;
         if (System::IsRelativePath(path)) {
             absPath = System::ApplicationDirectory() + PathSeparator + path;
@@ -108,15 +131,25 @@ namespace LoadSO {
 #ifdef _WIN32
             ::LoadLibraryW(absPath.data())
 #else
-            dlopen(absPath.data(), RTLD_NOW)
+            dlopen(absPath.data(), Impl::nativeLoadHints(hints))
 #endif
             ;
         if (!handle) {
-            _impl->getErrMsg();
             return false;
         }
 
+#ifdef _WIN32
+        if (hints & PreventUnloadHint) {
+            // prevent the unloading of this component
+            HMODULE hmod;
+            ::GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN |
+                                     GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+                                 reinterpret_cast<const wchar_t *>(handle), &hmod);
+        }
+#endif
+
         _impl->hDll = handle;
+        _impl->path = path;
         return true;
     }
 
@@ -133,17 +166,27 @@ namespace LoadSO {
             (dlclose(handle) == 0)
 #endif
         ) {
-            _impl->getErrMsg();
             return false;
         }
+
+        _impl->hDll = nullptr;
+        _impl->path.clear();
         return true;
+    }
+
+    bool Library::isOpen() const {
+        return _impl->hDll != nullptr;
+    }
+
+    PathString Library::path() const {
+        return _impl->path;
     }
 
     DllHandle Library::handle() const {
         return _impl->hDll;
     }
 
-    EntryHandle Library::entry(const std::string &name) {
+    EntryHandle Library::resolve(const std::string &name) {
         auto handle = _impl->hDll;
         if (!handle) {
             return nullptr;
@@ -156,13 +199,11 @@ namespace LoadSO {
             dlsym(handle, name.data())
 #endif
             ;
-        if (!addr) {
-            _impl->getErrMsg();
-        }
         return addr;
     }
 
-    PathString Library::lastError() const {
-        return _impl->errorMessage;
+    PathString Library::lastError(bool nativeLanguage) const {
+        return _impl->getErrMsg(nativeLanguage);
     }
+
 }
