@@ -7,6 +7,8 @@
 
 namespace LoadSO {
 
+    class PluginLoader;
+
     class LOADSO_EXPORT Library {
     public:
         Library();
@@ -65,7 +67,7 @@ namespace LoadSO {
          *
          * @param name Function name
          */
-        EntryHandle resolve(const std::string &name);
+        EntryHandle resolve(const char *name) const;
 
         /**
          * @brief System last error.
@@ -78,6 +80,8 @@ namespace LoadSO {
     protected:
         class Impl;
         std::unique_ptr<Impl> _impl;
+
+        friend class PluginLoader;
     };
 
 }

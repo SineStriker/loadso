@@ -40,14 +40,7 @@ int main(int argc, char *argv[]) {
     PrintLine(LOADSO_STR("[Test Load Library]"));
     Library lib;
 
-    if (!lib.open(
-#ifdef _WIN32
-            LOADSO_STR(DLL_NAME)
-#else
-            LOADSO_STR("../lib/" DLL_NAME)
-#endif
-                ,
-            Library::ResolveAllSymbolsHint)) {
+    if (!lib.open(LOADSO_STR(DLL_NAME), Library::ResolveAllSymbolsHint)) {
         System::ShowError(lib.lastError());
         return -1;
     }

@@ -61,7 +61,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_14)
+target_include_directories(${PROJECT_NAME} PRIVATE src include/loadso)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
 
 if(LOADSO_INSTALL)
     install(TARGETS ${PROJECT_NAME}
@@ -118,5 +119,10 @@ if(LOADSO_INSTALL)
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         FILES_MATCHING PATTERN "*.h"
+    )
+
+    # Install cmake modules
+    install(DIRECTORY cmake/
+        DESTINATION ${_install_dir}/cmake
     )
 endif()
