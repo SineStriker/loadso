@@ -315,11 +315,11 @@ namespace LoadSO {
         return _impl->hDll != nullptr;
     }
 
-    PathString PluginLoader::fileName() const {
+    PathString PluginLoader::path() const {
         return _impl->path;
     }
 
-    void PluginLoader::setFileName(const PathString &fileName) {
+    void PluginLoader::setPath(const PathString &fileName) {
         if (_impl->path == fileName)
             return;
 

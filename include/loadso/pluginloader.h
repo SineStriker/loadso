@@ -21,8 +21,8 @@ namespace LoadSO {
         bool unload();
         bool isLoaded() const;
 
-        PathString fileName() const;
-        void setFileName(const PathString &fileName);
+        PathString path() const;
+        void setPath(const PathString &fileName);
 
         PathString lastError(bool nativeLanguage = false) const;
 

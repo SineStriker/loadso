@@ -2,6 +2,13 @@ if(NOT DEFINED LOADSO_PLUGIN_SECTION_NAME)
     set(LOADSO_PLUGIN_SECTION_NAME "loadso_metadata")
 endif()
 
+#[[
+
+    loadso_export_plugin(<target> <header/source file> <class name>
+        [METADATA_FILE <file>]
+    )
+
+]]#
 function(loadso_export_plugin _target _header _class_name)
     set(options)
     set(oneValueArgs)
@@ -56,11 +63,21 @@ function(loadso_export_plugin _target _header _class_name)
                 COMMAND_ERROR_IS_FATAL ANY
                 WORKING_DIRECTORY ${_cache_dir}
             )
-            execute_process(
-                COMMAND ${_sed_command} -i "" "s/unsigned/static constexpr unsigned/" ${_resource_cpp}
-                COMMAND_ERROR_IS_FATAL ANY
-                WORKING_DIRECTORY ${_cache_dir}
-            )
+
+            if(APPLE)
+                execute_process(
+                    COMMAND ${_sed_command} -i "" "s/unsigned/static constexpr unsigned/" ${_resource_cpp}
+                    COMMAND_ERROR_IS_FATAL ANY
+                    WORKING_DIRECTORY ${_cache_dir}
+                )
+            else()
+                execute_process(
+                    COMMAND ${_sed_command} -i "s/unsigned/static constexpr unsigned/" ${_resource_cpp}
+                    COMMAND_ERROR_IS_FATAL ANY
+                    WORKING_DIRECTORY ${_cache_dir}
+                )
+            endif()
+
             target_sources(${_target} PRIVATE ${_resource_cpp})
         endif()
     endif()
