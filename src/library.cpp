@@ -159,7 +159,7 @@ namespace LoadSO {
         return reinterpret_cast<void *>(addr);
     }
 
-    Library::Library() : _impl(std::make_unique<Impl>()) {
+    Library::Library() : _impl(new Impl()) {
     }
 
     Library::~Library() = default;

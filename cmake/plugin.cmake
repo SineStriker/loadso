@@ -1,5 +1,5 @@
 if(NOT DEFINED LOADSO_PLUGIN_SECTION_NAME)
-    set(LOADSO_PLUGIN_SECTION_NAME "loadso_plugin_metadata")
+    set(LOADSO_PLUGIN_SECTION_NAME "loadso_metadata")
 endif()
 
 function(loadso_export_plugin _target _header _class_name)
@@ -31,9 +31,9 @@ function(loadso_export_plugin _target _header _class_name)
             set(_export_attribute "__attribute__((visibility(\"default\")))")
 
             if(APPLE)
-                set(_section_attribute "__attribute__((section(\"__DATA,${LOADSO_PLUGIN_SECTION_NAME}\")))")
+                set(_section_attribute "__attribute__((section(\"__TEXT,${LOADSO_PLUGIN_SECTION_NAME}\"))) __attribute__((used))")
             else()
-                set(_section_attribute "__attribute__((section(\".${LOADSO_PLUGIN_SECTION_NAME}\")))")
+                set(_section_attribute "__attribute__((section(\".${LOADSO_PLUGIN_SECTION_NAME}\"))) __attribute__((used))")
             endif()
 
             find_program(_xxd_command xxd)
@@ -57,7 +57,7 @@ function(loadso_export_plugin _target _header _class_name)
                 WORKING_DIRECTORY ${_cache_dir}
             )
             execute_process(
-                COMMAND ${_sed_command} -i "s/unsigned/static constexpr unsigned/" ${_resource_cpp}
+                COMMAND ${_sed_command} -i "" "s/unsigned/static constexpr unsigned/" ${_resource_cpp}
                 COMMAND_ERROR_IS_FATAL ANY
                 WORKING_DIRECTORY ${_cache_dir}
             )

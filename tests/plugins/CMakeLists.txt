@@ -2,9 +2,11 @@ include(../../cmake/plugin.cmake)
 
 add_library(plugin1 SHARED plugin1.h plugin1.cpp)
 loadso_export_plugin(plugin1 plugin1.h LoadSO::Plugin METADATA_FILE plugin1.txt)
+target_compile_features(plugin1 PRIVATE cxx_std_11)
 
 add_library(plugin2 SHARED plugin2.cpp)
 loadso_export_plugin(plugin2 plugin2.cpp LoadSO::Plugin METADATA_FILE plugin2.txt)
+target_compile_features(plugin2 PRIVATE cxx_std_11)
 
 add_executable(loader loader.cpp)
 target_link_libraries(loader PRIVATE loadso)
