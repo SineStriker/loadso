@@ -1,6 +1,6 @@
 # LoadSO
 
-Cross-platform class to handle shared library.
+Cross-platform shared library utility and tiny plugin framework.
 
 ## Supported Platforms
 
@@ -126,3 +126,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
     ```
+
+## License
+
+Licensed under the MIT License, Copyright 2022-2024 SineStriker.
