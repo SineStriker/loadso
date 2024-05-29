@@ -119,6 +119,17 @@ namespace LoadSO {
         close();
     }
 
+    Library::Library(Library &&other) noexcept : _impl(std::make_unique<Impl>()) {
+        std::swap(_impl, other._impl);
+    }
+
+    Library &Library::operator=(Library &&other) noexcept {
+        if (this == &other)
+            return *this;
+        std::swap(_impl, other._impl);
+        return *this;
+    }
+
     bool Library::open(const PathString &path, int hints) {
         PathString absPath;
         if (System::IsRelativePath(path)) {

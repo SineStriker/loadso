@@ -47,6 +47,16 @@ namespace LoadSO {
         static void ShowError(const PathString &text);
     };
 
+#ifndef _WIN32
+    inline PathString System::MultiToPathString(const std::string &bytes) {
+        return bytes;
+    }
+
+    inline std::string System::MultiFromPathString(const PathString &str) {
+        return str;
+    }
+#endif
+
 }
 
 #endif // LOADSO_SYSTEM_H

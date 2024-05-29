@@ -219,8 +219,8 @@ namespace LoadSO {
         return res;
     }
 
-    PathString System::MultiToPathString(const std::string &bytes) {
 #ifdef _WIN32
+    PathString System::MultiToPathString(const std::string &bytes) {
         int len = ::MultiByteToWideChar(CP_UTF8, 0, bytes.data(), (int) bytes.size(), nullptr, 0);
         auto buf = new wchar_t[len + 1];
         ::MultiByteToWideChar(CP_UTF8, 0, bytes.data(), (int) bytes.size(), buf, len);
@@ -229,13 +229,11 @@ namespace LoadSO {
         std::wstring res(buf);
         delete[] buf;
         return res;
-#else
-        return bytes;
-#endif
     }
+#endif
 
-    std::string System::MultiFromPathString(const PathString &str) {
 #ifdef _WIN32
+    std::string System::MultiFromPathString(const PathString &str) {
         int len = ::WideCharToMultiByte(CP_UTF8, 0, str.data(), (int) str.size(), nullptr, 0,
                                         nullptr, nullptr);
         auto buf = new char[len + 1];
@@ -245,10 +243,8 @@ namespace LoadSO {
         std::string res(buf);
         delete[] buf;
         return res;
-#else
-        return str;
-#endif
     }
+#endif
 
     void System::ShowError(const PathString &text) {
 #ifdef _WIN32

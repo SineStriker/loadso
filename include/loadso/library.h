@@ -12,6 +12,9 @@ namespace LoadSO {
         Library();
         ~Library();
 
+        Library(Library &&other) noexcept;
+        Library &operator=(Library &&other) noexcept;
+
     public:
         /**
          * @brief Call `open` with a combination of the following hints.
