@@ -19,8 +19,7 @@ namespace LoadSO {
 
     public:
         /**
-         * @brief Call `open` with a combination of the following hints.
-         *
+         * @brief Give the open() function some hints on how it should behave.
          */
         enum LoadHint {
             ResolveAllSymbolsHint = 0x01,
@@ -31,51 +30,57 @@ namespace LoadSO {
         };
 
         /**
-         * @brief Load a library with a path, evaluated relative to the executable path if the path
-         * is relative. If you're going to load another library, close the current one first.
+         * @brief Loads a library with a path, evaluated relative to the executable path if the path
+         *        is relative. If you're going to load another library, close the current one first.
          *
          * @param path Library path
          * @param hints Loading hints
          */
         bool open(const PathString &path, int hints = 0);
 
+#ifdef LOADSO_STD_FILESYSTEM
+        inline bool open2(const std::filesystem::path &path, int hints = 0);
+#endif
+
         /**
-         * @brief Release the library.
-         *
+         * @brief Frees the library and returns \c true if successful.
          */
         bool close();
 
         /**
-         * @brief Whether the library is loaded.
-         *
+         * @brief Returns \c true if the library is loaded.
          */
         bool isOpen() const;
 
         /**
-         * @return Library path
+         * @brief Returns the library path.
          */
         PathString path() const;
 
-        /**
-         * @brief Library handle
-         *
-         */
-        DllHandle handle() const;
+#ifdef LOADSO_STD_FILESYSTEM
+        inline std::filesystem::path path2() const;
+#endif
 
         /**
-         * @brief Resolve a function by the name.
+         * @brief Returns the ibrary handle.
+         */
+        LibraryHandle handle() const;
+
+        /**
+         * @brief Returns the address of the exported symbol by name, the library
+         *        should be loaded first.
          *
          * @param name Function name
          */
         EntryHandle resolve(const char *name) const;
 
         /**
-         * @brief System last error.
+         * @brief Returns the system's last error.
          *
          * @param nativeLanguage Whether to use native language, only works on Windows
-         * @return Last error message if an operation fails
+         * @return Last error message if an operation fails, UTF-8 encoded
          */
-        PathString lastError(bool nativeLanguage = false) const;
+        std::string lastError(bool nativeLanguage = false) const;
 
     protected:
         class Impl;
@@ -83,6 +88,16 @@ namespace LoadSO {
 
         friend class PluginLoader;
     };
+
+#ifdef LOADSO_STD_FILESYSTEM
+    inline bool Library::open2(const std::filesystem::path &path, int hints) {
+        return open(path, hints);
+    }
+
+    inline std::filesystem::path Library::path2() const {
+        return path();
+    }
+#endif
 
 }
 

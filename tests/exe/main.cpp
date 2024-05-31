@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     Library lib;
 
     if (!lib.open(LOADSO_STR(DLL_NAME), Library::ResolveAllSymbolsHint)) {
-        System::ShowError(lib.lastError());
+        System::ShowError(System::MultiToPathString(lib.lastError()));
         return -1;
     }
     PrintLine(LOADSO_STR("OK"));
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     using AddFunc = int (*)(int, int);
     auto add_func = (AddFunc) lib.resolve("add");
     if (!add_func) {
-        System::ShowError(lib.lastError());
+        System::ShowError(System::MultiToPathString(lib.lastError()));
         return -1;
     }
     PrintLine(LOADSO_STR("OK"));

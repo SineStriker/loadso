@@ -23,6 +23,8 @@
 #  include <fstream>
 #endif
 
+#include "system.h"
+
 #define LOADSO_PLUGIN_IDENTIFIER "loadso_metadata"
 
 namespace LoadSO {
@@ -319,8 +321,8 @@ namespace LoadSO {
         return _impl->path;
     }
 
-    void PluginLoader::setPath(const PathString &fileName) {
-        if (_impl->path == fileName)
+    void PluginLoader::setPath(const PathString &path) {
+        if (_impl->path == path)
             return;
 
         if (_impl->hDll) {
@@ -329,11 +331,11 @@ namespace LoadSO {
         _impl->metaData.clear();
         _impl->metaDataLoaded = false;
         _impl->pluginInstance = nullptr;
-        _impl->path = fileName;
+        _impl->path = path;
     }
 
-    PathString PluginLoader::lastError(bool nativeLanguage) const {
-        return _impl->sysErrorMessage(nativeLanguage);
+    std::string PluginLoader::lastError(bool nativeLanguage) const {
+        return System::MultiFromPathString(_impl->sysErrorMessage(nativeLanguage));
     }
 
 }

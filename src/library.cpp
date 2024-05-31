@@ -200,7 +200,7 @@ namespace LoadSO {
         return _impl->path;
     }
 
-    DllHandle Library::handle() const {
+    LibraryHandle Library::handle() const {
         return _impl->hDll;
     }
 
@@ -208,8 +208,8 @@ namespace LoadSO {
         return _impl->resolve(name);
     }
 
-    PathString Library::lastError(bool nativeLanguage) const {
-        return _impl->sysErrorMessage(nativeLanguage);
+    std::string Library::lastError(bool nativeLanguage) const {
+        return System::MultiFromPathString(_impl->sysErrorMessage(nativeLanguage));
     }
 
 }

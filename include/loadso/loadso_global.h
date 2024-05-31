@@ -3,6 +3,11 @@
 
 #include <string>
 
+#if __cplusplus >= 201703L && !defined(LOADSO_LIBRARY)
+#  define LOADSO_STD_FILESYSTEM
+#  include <filesystem>
+#endif
+
 #ifdef _WIN32
 #  define _LOADSO_DECL_EXPORT __declspec(dllexport)
 #  define _LOADSO_DECL_IMPORT __declspec(dllimport)
@@ -28,7 +33,7 @@ namespace LoadSO {
 #ifdef _WIN32
     using PathChar = wchar_t;
     using PathString = std::wstring;
-    using DllHandle = void *;
+    using LibraryHandle = void *;
     using EntryHandle = void *;
 
 #  define _LOADSO_STR(s) L##s
@@ -36,17 +41,17 @@ namespace LoadSO {
 #  define LOADSO_STR(s) _LOADSO_STR(s)
 #  define LOADSO_STRCPY wcscpy
 
-    static const PathChar PathSeparator = L'\\';
+    static constexpr const PathChar PathSeparator = L'\\';
 #else
     using PathChar = char;
     using PathString = std::string;
-    using DllHandle = void *;
+    using LibraryHandle = void *;
     using EntryHandle = void *;
 
 #  define LOADSO_STR(s) s
 #  define LOADSO_STRCPY strcpy
 
-    static const PathChar PathSeparator = '/';
+    static constexpr const PathChar PathSeparator = '/';
 #endif
 
 }

@@ -20,7 +20,7 @@ Cross-platform shared library utility and tiny plugin framework.
 int main(int argc, char *argv[]) {
     // Load libary
     LoadSO::Library lib;
-    if (!lib.open(std::filesystem::path("add.dll"))) {
+    if (!lib.open2("add.dll")) {
         return -1;
     }
 
@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
 
     int main(int argc, char *argv[]) {
         LoadSO::PluginLoader plugin;
-        plugin.setPath(std::filesystem::path("plugin.dll"));
+        plugin.setPath2("plugin.dll");
 
         // Check metadata before loading the library
         if (plugin.metaData() != "some metadata") {
